@@ -143,8 +143,8 @@ class MinimaxAgent(MultiAgentSearchAgent):
         numOfAgents = gameState.getNumAgents()
         newDepth = self.depth * numOfAgents
         
-        aTuple = getValue(gameState, newDepth, 0, numOfAgents)
-        return aTuple[1]
+        solution = self.getValue(gameState, newDepth, 0, numOfAgents)
+        return solution[1]
         
         
     def getValue(self, gameState, depth, playerType, numOfAgents):
@@ -152,13 +152,14 @@ class MinimaxAgent(MultiAgentSearchAgent):
         if depth == 0 or gameState.isWin() or gameState.isLose():
             return (self.evaluationFunction(gameState), None)
         
+        legalMoves = gameState.getLegalActions(playerType)
         newPlayerType = (playerType + 1) % numOfAgents
-        legalMoves = gameState.getLegalActions(self.index)
         
         valueOfMoves = []
         for action in legalMoves:
             successor = gameState.generateSuccessor(playerType, action)
-            valueOfmoves.append((self.evaluationFunction(successor), action))
+            val = self.getValue(gameState, depth-1, newPlayerType, numOfAgents)
+            valueOfmoves.append((val, action))
         
         return min(valueOfMoves) if playerType >= 1 else max(valueOfMoves)
 class AlphaBetaAgent(MultiAgentSearchAgent):
