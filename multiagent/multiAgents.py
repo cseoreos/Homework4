@@ -140,8 +140,27 @@ class MinimaxAgent(MultiAgentSearchAgent):
             Returns the total number of agents in the game
         """
         "*** YOUR CODE HERE ***"
-        util.raiseNotDefined()
-
+        numOfAgents = gameState.getNumAgents()
+        newDepth = self.depth * numOfAgents
+        
+        aTuple = getValue(gameState, newDepth, 0, numOfAgents)
+        return aTuple[1]
+        
+        
+    def getValue(self, gameState, depth, playerType, numOfAgents):
+    
+        if depth == 0 or gameState.isWin() or gameState.isLose():
+            return (self.evaluationFunction(gameState), None)
+        
+        newPlayerType = (playerType + 1) % numOfAgents
+        legalMoves = gameState.getLegalActions(self.index)
+        
+        valueOfMoves = []
+        for action in legalMoves:
+            successor = gameState.generateSuccessor(playerType, action)
+            valueOfmoves.append((self.evaluationFunction(successor), action))
+        
+        return min(valueOfMoves) if playerType >= 1 else max(valueOfMoves)
 class AlphaBetaAgent(MultiAgentSearchAgent):
     """
       Your minimax agent with alpha-beta pruning (question 3)
