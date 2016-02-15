@@ -191,6 +191,7 @@ class MinimaxAgent(MultiAgentSearchAgent):
             return (self.evaluationFunction(gameState), Directions.STOP)
         
         legalMoves = gameState.getLegalActions(playerType)
+        legalMoves.remove(Directions.STOP)
         newPlayerType = (playerType + 1) % numOfAgents
         
         valueOfMoves = []
@@ -215,6 +216,17 @@ class AlphaBetaAgent(MultiAgentSearchAgent):
         beta = (MAX, Directions.STOP)
         solution = self.getAlphaBeta(gameState, newDepth, alpha, beta, 0, numOfAgents)
         return solution[1]
+
+    def getHeuristicValue(self, gameState):
+        #Returns the minimax action using self.depth and self.evaluationFunction
+        "*** YOUR CODE HERE ***"
+        numOfAgents = gameState.getNumAgents()
+        newDepth = self.depth * numOfAgents
+        
+        alpha = (MIN, Directions.STOP)
+        beta = (MAX, Directions.STOP)
+        solution = self.getAlphaBeta(gameState, newDepth, alpha, beta, 0, numOfAgents)
+        return solution[0]
         
     def getAlphaBeta(self, gameState, depth, alpha, beta, playerType, numOfAgents):    
         if depth == 0 or gameState.isWin() or gameState.isLose():
@@ -302,7 +314,11 @@ def betterEvaluationFunction(currentGameState):
       DESCRIPTION: <write something here so we know what you did>
     """
     "*** YOUR CODE HERE ***"
-    util.raiseNotDefined()
+    
+    agent = AlphaBetaAgent()
+    return agent.getHeuristicValue(currentGameState)
+    
+    
 
 # Abbreviation
 better = betterEvaluationFunction
