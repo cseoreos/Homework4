@@ -18,6 +18,15 @@ import random, util
 
 from game import Agent
 
+#using 32-bit max and min ints
+MAX = 999999
+MIN = -999999
+
+MAXFLOAT = 999999.0
+MINFLOAT = -999999.0
+
+INF = 2147483647
+
 class ReflexAgent(Agent):
     """
       A reflex agent chooses an action at each choice point by examining
@@ -140,17 +149,16 @@ class MinimaxAgent(MultiAgentSearchAgent):
             Returns the total number of agents in the game
         """
         "*** YOUR CODE HERE ***"
+        
         numOfAgents = gameState.getNumAgents()
         newDepth = self.depth * numOfAgents
         
         solution = self.getValue(gameState, newDepth, 0, numOfAgents)
         return solution[1]
         
-        
-    def getValue(self, gameState, depth, playerType, numOfAgents):
-    
+    def getValue(self, gameState, depth, playerType, numOfAgents):   
         if depth == 0 or gameState.isWin() or gameState.isLose():
-            return (self.evaluationFunction(gameState), None)
+            return (self.evaluationFunction(gameState), Directions.STOP)
         
         legalMoves = gameState.getLegalActions(playerType)
         newPlayerType = (playerType + 1) % numOfAgents
@@ -158,22 +166,58 @@ class MinimaxAgent(MultiAgentSearchAgent):
         valueOfMoves = []
         for action in legalMoves:
             successor = gameState.generateSuccessor(playerType, action)
-            val = self.getValue(gameState, depth-1, newPlayerType, numOfAgents)
-            valueOfmoves.append((val, action))
+            val = self.getValue(successor, depth-1, newPlayerType, numOfAgents)
+            valueOfMoves.append((val, action))
         
         return min(valueOfMoves) if playerType >= 1 else max(valueOfMoves)
+        
 class AlphaBetaAgent(MultiAgentSearchAgent):
     """
       Your minimax agent with alpha-beta pruning (question 3)
     """
-
     def getAction(self, gameState):
-        """
-          Returns the minimax action using self.depth and self.evaluationFunction
-        """
+        #Returns the minimax action using self.depth and self.evaluationFunction
         "*** YOUR CODE HERE ***"
-        util.raiseNotDefined()
-
+        numOfAgents = gameState.getNumAgents()
+        newDepth = self.depth * numOfAgents
+        
+        alpha = (MIN, Directions.STOP)
+        beta = (MAX, Directions.STOP)
+        solution = self.getAlphaBeta(gameState, newDepth, alpha, beta, 0, numOfAgents)
+        return solution[1]
+        
+    def getAlphaBeta(self, gameState, depth, alpha, beta, playerType, numOfAgents):    
+        if depth == 0 or gameState.isWin() or gameState.isLose():
+            return (self.evaluationFunction(gameState), Directions.STOP)
+        
+        legalMoves = gameState.getLegalActions(playerType)
+        newPlayerType = (playerType + 1) % numOfAgents
+        
+        if playerType == 0:
+            maxMove = (MIN, Directions.STOP)
+            for action in legalMoves:
+                successor = gameState.generateSuccessor(playerType, action)
+                val = self.getAlphaBeta(successor, depth-1, alpha, beta, newPlayerType, numOfAgents)
+                maxMove = max(maxMove, (val[0], action))
+                """algo says that this comparison should be >= but the tests use > & <.
+                I AM CONFUSED. THE TEST CASE IT FAILS LOOKS WRONG."""
+                if maxMove[0] > beta[0]:
+                    break
+                alpha = max(alpha, maxMove)
+            return maxMove
+            
+        else:
+            minMove = (MAX, None)
+            for action in legalMoves:
+                successor = gameState.generateSuccessor(playerType, action)
+                val = self.getAlphaBeta(successor, depth-1, alpha, beta, newPlayerType, numOfAgents)
+                minMove = min(minMove, (val[0], action))
+                """using < instead of <=???"""
+                if minMove[0] < alpha[0]:
+                    break
+                beta = min(beta, minMove)
+            return minMove        
+        
 class ExpectimaxAgent(MultiAgentSearchAgent):
     """
       Your expectimax agent (question 4)
@@ -187,8 +231,39 @@ class ExpectimaxAgent(MultiAgentSearchAgent):
           legal moves.
         """
         "*** YOUR CODE HERE ***"
-        util.raiseNotDefined()
+        numOfAgents = gameState.getNumAgents()
+        newDepth = self.depth * numOfAgents
+        legalMoves = gameState.getLegalActions(0)
 
+        expectedValue = (MINFLOAT, Directions.STOP)
+        for action in legalMoves:
+            successor = gameState.generateSuccessor(0, action)
+            val = self.getExpectimax(successor, newDepth-1, 1, numOfAgents)
+            expectedValue = max(expectedValue, (val, action))
+            
+        return expectedValue[1]
+            
+    def getExpectimax(self, gameState, depth, playerType, numOfAgents):
+        if depth == 0 or gameState.isWin() or gameState.isLose():
+            return float(self.evaluationFunction(gameState))
+        
+        legalMoves = gameState.getLegalActions(playerType)
+        newPlayerType = (playerType + 1) % numOfAgents
+        expectedValue = 0.0
+        
+        if playerType == 0:
+            expectedValue = MINFLOAT
+            for action in legalMoves:
+                successor = gameState.generateSuccessor(playerType, action)
+                val = self.getExpectimax(successor, depth-1, newPlayerType, numOfAgents)
+                expectedValue = max(expectedValue, val)
+        else:
+            for action in legalMoves:
+                successor = gameState.generateSuccessor(playerType, action)
+                val = self.getExpectimax(successor, depth-1, newPlayerType, numOfAgents)
+                expectedValue += 1.0/float(len(legalMoves)) * val
+        return expectedValue
+                
 def betterEvaluationFunction(currentGameState):
     """
       Your extreme ghost-hunting, pellet-nabbing, food-gobbling, unstoppable
