@@ -87,14 +87,49 @@ class ReflexAgent(Agent):
         newGhostStates = successorGameState.getGhostStates()
         newScaredTimes = [ghostState.scaredTimer for ghostState in newGhostStates]
 
-        "*** YOUR CODE HERE ***"
-        print "successorGameState: ", successorGameState
-        print "Ghost states: ", successorGameState.getGhostPositions()
-        print "successorGameState Scores", successorGameState.getScore()
-        print "newPos: ", newPos
-        print "newFood: ", newFood
-        print "newScaredTimes: ", newScaredTimes
-        return successorGameState.getScore()
+        '''We don't care how close we are to the ghost as long as we don't touch the 
+        ghost. If food is closer than ghost, head towards food.'''
+
+        finalVal = 0
+        min_val = -sys.maxint - 1 
+        #ghost_pos = successorGameState.getGhostPositions()
+
+        '''We never want to stop or bump into the ghost because that will make us
+        lose a lot of points. Stopping is not helpful for the pacman since it is
+        better to move foward in some direction in the hope that a better
+        scenario presents itself'''
+
+
+        if action == "Stop" or len(filter(lambda x: (x.getPosition() == newPos and
+            x.scaredTimer == 0), newGhostStates)) != 0:
+            '''return the lowest int value'''
+            return min_val
+
+        '''Get the distance to all the possible foods in the grid'''
+        foodDistList = map(lambda food: util.manhattanDistance(food, newPos),
+            currentGameState.getFood().asList())
+
+        foodDistList += map(lambda capsule: util.manhattanDistance(capsule, newPos),
+            currentGameState.getCapsules()) 
+
+        '''We want the closest food to the pacman'''
+        if len(foodDistList) > 0:
+            finalVal += min(foodDistList)
+
+        
+        ghostList = currentGameState.getGhostPositions()
+        ghostDistList = map(lambda ghost: util.manhattanDistance(ghost, newPos), ghostList)
+        minGhostDist = min(ghostDistList)
+        
+
+        '''Only if the ghost is closer to food, we eat the scared ghost'''
+        for idx, timer in enumerate(newScaredTimes):
+            if len(ghostDistList) > 0:
+                val = timer - ghostDistList[idx]
+                if val > 0 and finalVal > minGhostDist:
+                    finalVal -= minGhostDist
+
+        return -(finalVal)
 
 def scoreEvaluationFunction(currentGameState):
     """
