@@ -14,7 +14,7 @@
 
 from util import manhattanDistance
 from game import Directions
-import random, util
+import random, util, sys
 
 from game import Agent
 
@@ -49,18 +49,13 @@ class ReflexAgent(Agent):
         """
         # Collect legal moves and successor states
         legalMoves = gameState.getLegalActions()
-        print "Legal Moves: ", legalMoves
 
         # Choose one of the best actions
         scores = [self.evaluationFunction(gameState, action) for action in legalMoves]
-        print "Scores: ", scores
         bestScore = max(scores)
-        print "Best score: ", bestScore
         bestIndices = [index for index in range(len(scores)) if scores[index] == bestScore]
-        print "Best indicies: ", bestIndices
         chosenIndex = random.choice(bestIndices) # Pick randomly among the best
-        print "chosenIndex: ", chosenIndex
-        print "legal moves index: ", legalMoves[chosenIndex]
+
         "Add more of your code here if you want to"
 
         return legalMoves[chosenIndex]
