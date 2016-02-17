@@ -190,27 +190,28 @@ class MinimaxAgent(MultiAgentSearchAgent):
         
         return max(solutionList)[1]
         
-    def getValue(self, state, depth, playerType):   
-        if depth == 0 or len(state.getLegalActions(playerType)) == 0:
-            return (self.evaluationFunction(state))
+    def getValue(self, gameState, depth, playerType):   
+        if depth == 0 or len(gameState.getLegalActions(playerType)) == 0:
+            return (self.evaluationFunction(gameState))
         
-        legalMoves = state.getLegalActions(playerType)
+        legalMoves = gameState.getLegalActions(playerType)
+        numAgents = gameState.getNumAgents()
 
         valueOfMoves = []
         if playerType == 0:
             
             for action in legalMoves:
-                successor = state.generateSuccessor(0, action)
+                successor = gameState.generateSuccessor(0, action)
                 val = self.getValue(successor, depth, 1)
                 valueOfMoves.append(val)
             return max(valueOfMoves)
 
         else:
-            newPlayerType = (playerType + 1) % state.getNumAgents()
-            depth -= (playerType + 1)//state.getNumAgents()
+            newPlayerType = (playerType + 1) % numAgents
+            depth -= (playerType + 1)// numAgents
 
             for action in legalMoves:
-                successor = state.generateSuccessor(playerType, action)
+                successor = gameState.generateSuccessor(playerType, action)
                 val = self.getValue(successor, depth, newPlayerType)
                 valueOfMoves.append(val)
 
