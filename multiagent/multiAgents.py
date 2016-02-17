@@ -180,27 +180,41 @@ class MinimaxAgent(MultiAgentSearchAgent):
         """
         "*** YOUR CODE HERE ***"
         
-        numOfAgents = gameState.getNumAgents()
-        newDepth = self.depth * numOfAgents
         
-        solution = self.getValue(gameState, newDepth, 0, numOfAgents)
-        return solution[1]
+        newDepth = self.depth #* numOfAgents
+        solutionList = []
+        for action in gameState.getLegalActions(0):
+            successor = gameState.generateSuccessor(0, action)
+            solutionVal = self.getValue(successor, newDepth, 1)
+            solutionList.append((solutionVal, action))
         
-    def getValue(self, gameState, depth, playerType, numOfAgents):   
-        if depth == 0 or gameState.isWin() or gameState.isLose():
-            return (self.evaluationFunction(gameState), Directions.STOP)
+        return max(solutionList)[1]
         
-        legalMoves = gameState.getLegalActions(playerType)
-        legalMoves.remove(Directions.STOP)
-        newPlayerType = (playerType + 1) % numOfAgents
+    def getValue(self, state, depth, playerType):   
+        if depth == 0 or len(state.getLegalActions(playerType)) == 0:
+            return (self.evaluationFunction(state))
         
+        legalMoves = state.getLegalActions(playerType)
+
         valueOfMoves = []
-        for action in legalMoves:
-            successor = gameState.generateSuccessor(playerType, action)
-            val = self.getValue(successor, depth-1, newPlayerType, numOfAgents)
-            valueOfMoves.append((val, action))
-        
-        return min(valueOfMoves) if playerType >= 1 else max(valueOfMoves)
+        if playerType == 0:
+            
+            for action in legalMoves:
+                successor = state.generateSuccessor(0, action)
+                val = self.getValue(successor, depth, 1)
+                valueOfMoves.append(val)
+            return max(valueOfMoves)
+
+        else:
+            newPlayerType = (playerType + 1) % state.getNumAgents()
+            depth -= (playerType + 1)//state.getNumAgents()
+
+            for action in legalMoves:
+                successor = state.generateSuccessor(playerType, action)
+                val = self.getValue(successor, depth, newPlayerType)
+                valueOfMoves.append(val)
+
+            return min(valueOfMoves)
         
 class AlphaBetaAgent(MultiAgentSearchAgent):
     """
