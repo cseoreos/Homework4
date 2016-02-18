@@ -123,7 +123,6 @@ class ReflexAgent(Agent):
                 val = timer - ghostDistList[idx]
                 if val > 0 and finalVal > minGhostDist:
                     finalVal -= minGhostDist
-
         return -(finalVal)
 
 def scoreEvaluationFunction(currentGameState):
@@ -180,7 +179,6 @@ class MinimaxAgent(MultiAgentSearchAgent):
         """
         "*** YOUR CODE HERE ***"
         
-        
         newDepth = self.depth #* numOfAgents
         solutionList = []
         for action in gameState.getLegalActions(0):
@@ -208,7 +206,7 @@ class MinimaxAgent(MultiAgentSearchAgent):
 
         else:
             newPlayerType = (playerType + 1) % numAgents
-            depth -= (playerType + 1)// numAgents
+            depth -= (playerType + 1)/numAgents
 
             for action in legalMoves:
                 successor = gameState.generateSuccessor(playerType, action)
@@ -221,27 +219,19 @@ class AlphaBetaAgent(MultiAgentSearchAgent):
     """
       Your minimax agent with alpha-beta pruning (question 3)
     """
+    """
     def getAction(self, gameState):
-        #Returns the minimax action using self.depth and self.evaluationFunction
-        "*** YOUR CODE HERE ***"
         numOfAgents = gameState.getNumAgents()
         newDepth = self.depth * numOfAgents
         
-        alpha = (MIN, Directions.STOP)
-        beta = (MAX, Directions.STOP)
-        solution = self.getAlphaBeta(gameState, newDepth, alpha, beta, 0, numOfAgents)
-        return solution[1]
-
-    def getHeuristicValue(self, gameState):
-        #Returns the minimax action using self.depth and self.evaluationFunction
-        "*** YOUR CODE HERE ***"
-        numOfAgents = gameState.getNumAgents()
-        newDepth = self.depth * numOfAgents
+        alpha = MIN
+        beta = MAX
+        for action in gameState.getLegalActions(0):
+            successor = gameState.generateSuccessor(0, action)
+            solutionVal = self.getValue(successor, alpha, beta, newDepth, 1)
+            solutionList.append((solutionVal, action))
         
-        alpha = (MIN, Directions.STOP)
-        beta = (MAX, Directions.STOP)
-        solution = self.getAlphaBeta(gameState, newDepth, alpha, beta, 0, numOfAgents)
-        return solution[0]
+        return max(solutionList)[1]
         
     def getAlphaBeta(self, gameState, depth, alpha, beta, playerType, numOfAgents):    
         if depth == 0 or gameState.isWin() or gameState.isLose():
@@ -256,8 +246,6 @@ class AlphaBetaAgent(MultiAgentSearchAgent):
                 successor = gameState.generateSuccessor(playerType, action)
                 val = self.getAlphaBeta(successor, depth-1, alpha, beta, newPlayerType, numOfAgents)
                 maxMove = max(maxMove, (val[0], action))
-                """algo says that this comparison should be >= but the tests use > & <.
-                I AM CONFUSED. THE TEST CASE IT FAILS LOOKS WRONG."""
                 if maxMove[0] > beta[0]:
                     break
                 alpha = max(alpha, maxMove)
@@ -269,11 +257,52 @@ class AlphaBetaAgent(MultiAgentSearchAgent):
                 successor = gameState.generateSuccessor(playerType, action)
                 val = self.getAlphaBeta(successor, depth-1, alpha, beta, newPlayerType, numOfAgents)
                 minMove = min(minMove, (val[0], action))
-                """using < instead of <=???"""
                 if minMove[0] < alpha[0]:
                     break
                 beta = min(beta, minMove)
-            return minMove        
+            return minMove     
+    
+    """
+    def getAction(self, gameState):
+        #Returns the minimax action using self.depth and self.evaluationFunction
+        "*** YOUR CODE HERE ***"
+        numOfAgents = gameState.getNumAgents()
+        newDepth = self.depth * numOfAgents
+        
+        alpha = (MIN, Directions.STOP)
+        beta = (MAX, Directions.STOP)
+        solution = self.getAlphaBeta(gameState, newDepth, alpha, beta, 0, numOfAgents)
+        return solution[1]
+        
+    def getAlphaBeta(self, gameState, depth, alpha, beta, playerType, numOfAgents):    
+        if depth == 0 or gameState.isWin() or gameState.isLose():
+            return (self.evaluationFunction(gameState),)
+        
+        legalMoves = gameState.getLegalActions(playerType)
+        newPlayerType = (playerType + 1) % numOfAgents
+        
+        if playerType == 0:
+            maxMove = (MIN, Directions.STOP)
+            for action in legalMoves:
+                successor = gameState.generateSuccessor(playerType, action)
+                val = self.getAlphaBeta(successor, depth-1, alpha, beta, newPlayerType, numOfAgents)
+                maxMove = max(maxMove, (val[0], action))
+                if maxMove[0] > beta[0]:
+                    break
+                alpha = max(alpha, maxMove)
+            return maxMove
+            
+        else:
+            minMove = (MAX, None)
+            for action in legalMoves:
+                successor = gameState.generateSuccessor(playerType, action)
+                val = self.getAlphaBeta(successor, depth-1, alpha, beta, newPlayerType, numOfAgents)
+                minMove = min(minMove, (val[0], action))
+                if minMove[0] < alpha[0]:
+                    break
+                beta = min(beta, minMove)
+            return minMove     
+            
         
 class ExpectimaxAgent(MultiAgentSearchAgent):
     """
@@ -320,7 +349,7 @@ class ExpectimaxAgent(MultiAgentSearchAgent):
                 val = self.getExpectimax(successor, depth-1, newPlayerType, numOfAgents)
                 expectedValue += 1.0/float(len(legalMoves)) * val
         return expectedValue
-                
+
 def betterEvaluationFunction(currentGameState):
     """
       Your extreme ghost-hunting, pellet-nabbing, food-gobbling, unstoppable
@@ -329,11 +358,59 @@ def betterEvaluationFunction(currentGameState):
       DESCRIPTION: <write something here so we know what you did>
     """
     "*** YOUR CODE HERE ***"
-    
-    agent = AlphaBetaAgent()
-    return agent.getHeuristicValue(currentGameState)
-    
-    
+    newPos = currentGameState.getPacmanPosition()
+    newFood = currentGameState.getFood()
+    newGhostStates = currentGameState.getGhostStates()
+    newScaredTimes = [ghostState.scaredTimer for ghostState in newGhostStates]
+
+    '''We don't care how close we are to the ghost as long as we don't touch the 
+    ghost. If food is closer than ghost, head towards food.'''
+
+    finalVal = 0
+    min_val = -sys.maxint - 1 
+    #ghost_pos = successorGameState.getGhostPositions()
+
+    '''We never want to stop or bump into the ghost because that will make us
+    lose a lot of points. Stopping is not helpful for the pacman since it is
+    better to move foward in some direction in the hope that a better
+    scenario presents itself'''
+
+
+    if currentGameState.getPacmanState == 'STOP' or len(filter(lambda x: (x.getPosition() == newPos and
+        x.scaredTimer == 0), newGhostStates)) != 0:
+        '''return the lowest int value'''
+        return min_val
+
+    '''Get the distance to all the possible foods in the grid'''
+    foodDistList = map(lambda food: util.manhattanDistance(food, newPos),
+        currentGameState.getFood().asList())
+
+    foodDistList += map(lambda capsule: util.manhattanDistance(capsule, newPos),
+        currentGameState.getCapsules()) 
+
+    '''We want the closest food to the pacman'''
+    if len(foodDistList) > 0:
+        minFoodDist = float(min(foodDistList))
+        finalVal += 1.0/float(min(foodDistList))
+
+    '''Subtract the minimum ghost distance for now. We want to maximize distance to ghosts
+    if possible'''
+    ghostList = currentGameState.getGhostPositions()
+    ghostDistList = map(lambda ghost: util.manhattanDistance(ghost, newPos), ghostList)
+    minGhostDist =  1.0/float(min(ghostDistList))
+    finalVal -= minGhostDist
+
+    '''But if the ghost is scared and it's closer than the nearest food, undo what we just did
+    and add the distance to the scared ghost to our final score'''
+    for idx, timer in enumerate(newScaredTimes):
+        if len(ghostDistList) > 0:
+            val = timer - ghostDistList[idx]
+            if val > 0 and minFoodDist > ghostDistList[idx]:
+                finalVal += 1.0/float(ghostDistList[idx]) + minGhostDist
+                break
+
+    return finalVal + float(currentGameState.getScore())
+       
 
 # Abbreviation
 better = betterEvaluationFunction
