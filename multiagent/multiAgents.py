@@ -87,7 +87,6 @@ class ReflexAgent(Agent):
 
         finalVal = 0
         min_val = -sys.maxint - 1 
-        #ghost_pos = successorGameState.getGhostPositions()
 
         '''We never want to stop or bump into the ghost because that will make us
         lose a lot of points. Stopping is not helpful for the pacman since it is
@@ -177,9 +176,9 @@ class MinimaxAgent(MultiAgentSearchAgent):
           gameState.getNumAgents():
             Returns the total number of agents in the game
         """
-        "*** YOUR CODE HERE ***"
+
         
-        newDepth = self.depth #* numOfAgents
+        newDepth = self.depth 
         solutionList = []
         for action in gameState.getLegalActions(0):
             successor = gameState.generateSuccessor(0, action)
@@ -218,50 +217,6 @@ class MinimaxAgent(MultiAgentSearchAgent):
 class AlphaBetaAgent(MultiAgentSearchAgent):
     """
       Your minimax agent with alpha-beta pruning (question 3)
-    """
-    """
-    def getAction(self, gameState):
-        numOfAgents = gameState.getNumAgents()
-        newDepth = self.depth * numOfAgents
-        
-        alpha = MIN
-        beta = MAX
-        for action in gameState.getLegalActions(0):
-            successor = gameState.generateSuccessor(0, action)
-            solutionVal = self.getValue(successor, alpha, beta, newDepth, 1)
-            solutionList.append((solutionVal, action))
-        
-        return max(solutionList)[1]
-        
-    def getAlphaBeta(self, gameState, depth, alpha, beta, playerType, numOfAgents):    
-        if depth == 0 or gameState.isWin() or gameState.isLose():
-            return (self.evaluationFunction(gameState), Directions.STOP)
-        
-        legalMoves = gameState.getLegalActions(playerType)
-        newPlayerType = (playerType + 1) % numOfAgents
-        
-        if playerType == 0:
-            maxMove = (MIN, Directions.STOP)
-            for action in legalMoves:
-                successor = gameState.generateSuccessor(playerType, action)
-                val = self.getAlphaBeta(successor, depth-1, alpha, beta, newPlayerType, numOfAgents)
-                maxMove = max(maxMove, (val[0], action))
-                if maxMove[0] > beta[0]:
-                    break
-                alpha = max(alpha, maxMove)
-            return maxMove
-            
-        else:
-            minMove = (MAX, None)
-            for action in legalMoves:
-                successor = gameState.generateSuccessor(playerType, action)
-                val = self.getAlphaBeta(successor, depth-1, alpha, beta, newPlayerType, numOfAgents)
-                minMove = min(minMove, (val[0], action))
-                if minMove[0] < alpha[0]:
-                    break
-                beta = min(beta, minMove)
-            return minMove     
-    
     """
     def getAction(self, gameState):
         #Returns the minimax action using self.depth and self.evaluationFunction
@@ -316,7 +271,7 @@ class ExpectimaxAgent(MultiAgentSearchAgent):
           All ghosts should be modeled as choosing uniformly at random from their
           legal moves.
         """
-        "*** YOUR CODE HERE ***"
+    
         numOfAgents = gameState.getNumAgents()
         newDepth = self.depth * numOfAgents
         legalMoves = gameState.getLegalActions(0)
@@ -357,7 +312,7 @@ def betterEvaluationFunction(currentGameState):
 
       DESCRIPTION: <write something here so we know what you did>
     """
-    "*** YOUR CODE HERE ***"
+
     newPos = currentGameState.getPacmanPosition()
     newFood = currentGameState.getFood()
     newGhostStates = currentGameState.getGhostStates()
