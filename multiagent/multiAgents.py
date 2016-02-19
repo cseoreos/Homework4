@@ -59,7 +59,7 @@ class ReflexAgent(Agent):
         "Add more of your code here if you want to"
 
         return legalMoves[chosenIndex]
-
+        
     def evaluationFunction(self, currentGameState, action):
         """
         Design a better evaluation function here.
@@ -388,7 +388,7 @@ def betterEvaluationFunction(currentGameState):
     foodDistList += map(lambda capsule: util.manhattanDistance(capsule, newPos),
         currentGameState.getCapsules()) 
 
-    '''We want the closest food to the pacman'''
+    '''We want the closest food/capsule to the pacman'''
     if len(foodDistList) > 0:
         minFoodDist = float(min(foodDistList))
         finalVal += 1.0/float(min(foodDistList))
