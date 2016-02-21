@@ -307,10 +307,25 @@ class ExpectimaxAgent(MultiAgentSearchAgent):
 
 def betterEvaluationFunction(currentGameState):
     """
-      Your extreme ghost-hunting, pellet-nabbing, food-gobbling, unstoppable
-      evaluation function (question 5).
+    Your extreme ghost-hunting, pellet-nabbing, food-gobbling, unstoppable
+    evaluation function (question 5).
 
-      DESCRIPTION: <write something here so we know what you did>
+    DESCRIPTION: In the case that the move is STOP or the ghostPos = pacmanPos,
+    we want to return the minimum value possible. This is because these are the moves
+    we consider least optimal. We want to keep Pacman moving and if ghostPos = pacmanPos,
+    then the game has been lost.
+
+    In the case that there are no nearby scared ghosts, we want the action that is closest
+    to the nearest food. In order to achieve this we use 1/minFoodDist. Large distances will
+    yield smaller results as we use the distance as a fraction, and the smallest food distance
+    will yield the highest score in this case. In this case, we subtract the 1/minGhostDist
+    because we wish to maximize the distance between Pacman and the ghost when the ghost is not 
+    edible.
+
+    In the case that there are nearby scared ghosts, we prioritize this state over other states.
+    We add the distance of the first scared ghost that is closer than the minimum food distance.
+    This places its priority over the actions that move toward the smallest food distance as 
+    there is an additional factor being added in.
     """
 
     newPos = currentGameState.getPacmanPosition()
@@ -347,6 +362,8 @@ def betterEvaluationFunction(currentGameState):
     if len(foodDistList) > 0:
         minFoodDist = float(min(foodDistList))
         finalVal += 1.0/float(min(foodDistList))
+    else:
+        minFoodDist = 0.0
 
     '''Subtract the minimum ghost distance for now. We want to maximize distance to ghosts
     if possible'''

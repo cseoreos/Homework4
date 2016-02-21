@@ -4,7 +4,7 @@ agentName: "ExpectimaxAgent"
 agentArgs: "evalFn=better"
 layoutName: "smallClassic"
 maxTime: "120"
-numGames: "10"
+numGames: "50"
 
 nonTimeoutMinimum: "0"
 nonTimeoutThresholds: "10"
