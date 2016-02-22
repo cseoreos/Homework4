@@ -1,3 +1,8 @@
+'''
+Partner 1: Gurkirat Singh (A11593827)
+Partner 2: Jessica Ng (A10683076)
+'''
+
 # multiAgents.py
 # --------------
 # Licensing Information:  You are free to use or extend these projects for
